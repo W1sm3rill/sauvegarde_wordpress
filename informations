@@ -11,4 +11,4 @@ mdp: wismerill
 sauvegarde: /home/wismerill/sauvegarde
 temporaire: /home/wismerill/sauvegarde
 wordpress: /var/www/wordpress
-expiration = 14
+expiration: 14
