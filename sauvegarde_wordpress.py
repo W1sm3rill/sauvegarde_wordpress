@@ -48,7 +48,7 @@ if os.path.isfile('informations'):
     DOSSIER_WORDPRESS = config.get('VARIABLES', 'wordpress')
     EXPIRATION = config.get('VARIABLES', 'expiration')
 else:
-    print('Vérifier la présence du fichier informations')
+    print('Vérifier la présence du fichier <informations>')
 
 
 #######
@@ -87,17 +87,17 @@ def sauvegarde_wordpress():
 
     except AuthenticationException as echec_authentication:
         logging.error(echec_authentication)
-        envoi_mail(echec_authentication)
+        envoi_mail('Erreur Sauvegarde de Wordpress')
         sys.exit(1)
 
     except PermissionError as permission_refuse:
         logging.error(permission_refuse)
-        envoi_mail(permission_refuse)
+        envoi_mail('Erreur Sauvegarde de Wordpress')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
         logging.error(erreur_inconnue)
-        envoi_mail(erreur_inconnue)
+        envoi_mail('Erreur Sauvegarde de Wordpress')
         sys.exit(1)
 
 
@@ -128,27 +128,27 @@ def info_bdd(sauvegarde):
 
     except FileNotFoundError as fichier_introuvable:
         logging.error(fichier_introuvable)
-        envoi_mail(fichier_introuvable)
+        envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except PermissionError as permission_refuse:
         logging.error(permission_refuse)
-        envoi_mail(permission_refuse)
+        envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except AttributeError as fichier_corrompu:
         logging.error(fichier_corrompu)
-        envoi_mail(fichier_corrompu)
+        envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except UnicodeEncodeError as erreur_analyse:
         logging.error(erreur_analyse)
-        envoi_mail(erreur_analyse)
+        envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
         logging.error(erreur_inconnue)
-        envoi_mail(erreur_inconnue)
+        envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
 
@@ -181,17 +181,17 @@ def sauvegarde_bdd(informations):
 
     except subprocess.CalledProcessError as echec_mysqldump:
         logging.error(echec_mysqldump)
-        envoi_mail(echec_mysqldump)
+        envoi_mail('Erreur Sauvegarde BDD')
         sys.exit(1)
 
     except UnicodeEncodeError as info_nonascii:
         logging.error(info_nonascii)
-        envoi_mail(info_nonascii)
+        envoi_mail('Erreur Sauvegarde BDD')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
         logging.error(erreur_inconnue)
-        envoi_mail(erreur_inconnue)
+        envoi_mail('Erreur Sauvegarde BDD')
         sys.exit(1)
 
 
@@ -218,23 +218,23 @@ def creation_archive(sauvegarde, dumpname):
 
         if os.path.exists(sauvegarde):
             shutil.rmtree(sauvegarde)
-        if os.path.exists(dumpname):
-            shutil.rmtree(dumpname)
+        if os.path.exists(DOSSIER_SAUVEGARDE+'/bdd'):
+            shutil.rmtree(DOSSIER_SAUVEGARDE+'/bdd')
         return archive_name
 
     except FileNotFoundError as fichier_introuvable:
         logging.error(fichier_introuvable)
-        envoi_mail(fichier_introuvable)
+        envoi_mail('Erreur Archivage')
         sys.exit(1)
 
     except PermissionError as permission_refuse:
         logging.error(permission_refuse)
-        envoi_mail(permission_refuse)
+        envoi_mail('Erreur Archivage')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
         logging.error(erreur_inconnue)
-        envoi_mail(erreur_inconnue)
+        envoi_mail('Erreur Archivage')
         sys.exit(1)
 
 
@@ -258,7 +258,7 @@ def suppression_anciennes_archives(days=14):
 
     except Exception as erreur_inconnue:
         logging.error(erreur_inconnue)
-        envoi_mail(erreur_inconnue)
+        envoi_mail('Erreur Suppression ancienne archive')
         sys.exit(1)
 
 
@@ -282,7 +282,6 @@ def envoi_mail(erreur):
 
     except Exception as erreur_inconnue:
         logging.error(erreur_inconnue)
-        envoi_mail(erreur_inconnue)
         sys.exit(1)
 
 
