@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf8 -*-
 
-"""
-Script pour sauvegarder sur un serveur distant, un site Wordpress et une base de donnee Mysql
-via sftp.
+""" Script pour sauvegarder sur un serveur distant,
+un site Wordpress et une base de donnee Mysql via sftp.
 
 OS testé : Ubuntu 19.10 Desktop / Server
            Ubuntu 18.04 Desktop / Server
@@ -15,6 +14,7 @@ OS testé : Ubuntu 19.10 Desktop / Server
 ###########
 
 import os
+import sys
 import re
 import subprocess
 import tarfile
@@ -61,19 +61,36 @@ def sauvegarde_wordpress():
     telecharge le dossier sur le serveur hote et supprime le dossier temporaire.
     Retourne le dossier de sauvegarde wordpress.
     """
-    if not os.path.exists(DOSSIER_SAUVEGARDE+'/wordpress'):
-        os.makedirs(DOSSIER_SAUVEGARDE+'/wordpress')
-    sauvegarde = DOSSIER_SAUVEGARDE+'/wordpress'
+    logging.info('Sauvegarde de Wordpress')
 
-    with pysftp.Connection(SFTP_HOST, username=SFTP_USER, password=SFTP_PASSWD) as sftp:
-        if not sftp.exists(DOSSIER_TEMPORAIRE):
-            sftp.makedirs(DOSSIER_TEMPORAIRE)
-        sftp.execute('cp -r DOSSIER_WORDPRESS DOSSIER_TEMPORAIRE')
-        sftp.get_d(DOSSIER_TEMPORAIRE, DOSSIER_SAUVEGARDE+'/wordpress')
-        sftp.execute('rm -R DOSSIER_TEMPORAIRE')
-        sftp.close()
+    try:
+        if not os.path.exists(DOSSIER_SAUVEGARDE+'/wordpress'):
+            os.makedirs(DOSSIER_SAUVEGARDE+'/wordpress')
+        sauvegarde = DOSSIER_SAUVEGARDE+'/wordpress'
 
-    return sauvegarde
+        with pysftp.Connection(SFTP_HOST, username=SFTP_USER, password=SFTP_PASSWD) as sftp:
+            if not sftp.exists(DOSSIER_TEMPORAIRE):
+                sftp.makedirs(DOSSIER_TEMPORAIRE)
+            sftp.execute('cp -r DOSSIER_WORDPRESS DOSSIER_TEMPORAIRE')
+            sftp.get_d(DOSSIER_TEMPORAIRE, DOSSIER_SAUVEGARDE+'/wordpress')
+            sftp.execute('rm -R DOSSIER_TEMPORAIRE')
+            sftp.close()
+        return sauvegarde
+
+    except AuthenticationException as echec_authentication:
+        logging.error(echec_authentication)
+        envoi_mail(echec_authentication)
+        sys.exit(1)
+
+    except PermissionError as permission_refuse:
+        logging.error(permission_refuse)
+        envoi_mail(permission_refuse)
+        sys.exit(1)
+
+    except Exception as erreur_inconnue:
+        logging.error(erreur_inconnue)
+        envoi_mail(erreur_inconnue)
+        sys.exit(1)
 
 
 ###########################################################################
@@ -85,19 +102,46 @@ def info_bdd(sauvegarde):
     recupere les informations de connexion a Mysql dans le fichier wp-config.php
     et le retourne dans un dictionnaire.
     """
-    fichier = os.path.normpath(sauvegarde+'/wp-config.php')
-    with open(fichier) as file:
-        contenu = file.read()
-        regex_db = r'define\(\s*?\'DB_NAME\'\s*?,\s*?\'(?P<DB>.*?)\'\s*?\);'
-        regex_user = r'define\(\s*?\'DB_USER\'\s*?,\s*?\'(?P<USER>.*?)\'\s*?\);'
-        regex_pass = r'define\(\s*?\'DB_PASSWORD\'\s*?,\s*?\'(?P<PASSWORD>.*?)\'\s*?\);'
-        regex_host = r'define\(\s*?\'DB_HOST\'\s*?,\s*?\'(?P<HOST>.*?)\'\s*?\);'
-        database = re.search(regex_db, contenu).group('DB')
-        user = re.search(regex_user, contenu).group('USER')
-        password = re.search(regex_pass, contenu).group('PASSWORD')
-        host = re.search(regex_host, contenu).group('HOST')
+    logging.info('Analyse des informations de connexion dans wp-config.php')
 
-    return {'database':database, 'user':user, 'password':password, 'host':host}
+    try:
+        fichier = os.path.normpath(sauvegarde+'/wp-config.php')
+        with open(fichier) as file:
+            contenu = file.read()
+            regex_db = r'define\(\s*?\'DB_NAME\'\s*?,\s*?\'(?P<DB>.*?)\'\s*?\);'
+            regex_user = r'define\(\s*?\'DB_USER\'\s*?,\s*?\'(?P<USER>.*?)\'\s*?\);'
+            regex_pass = r'define\(\s*?\'DB_PASSWORD\'\s*?,\s*?\'(?P<PASSWORD>.*?)\'\s*?\);'
+            regex_host = r'define\(\s*?\'DB_HOST\'\s*?,\s*?\'(?P<HOST>.*?)\'\s*?\);'
+            database = re.search(regex_db, contenu).group('DB')
+            user = re.search(regex_user, contenu).group('USER')
+            password = re.search(regex_pass, contenu).group('PASSWORD')
+            host = re.search(regex_host, contenu).group('HOST')
+        return {'database':database, 'user':user, 'password':password, 'host':host}
+
+    except FileNotFoundError as fichier_introuvable:
+        logging.error(fichier_introuvable)
+        envoi_mail(fichier_introuvable)
+        sys.exit(1)
+
+    except PermissionError as permission_refuse:
+        logging.error(permission_refuse)
+        envoi_mail(permission_refuse)
+        sys.exit(1)
+
+    except AttributeError as fichier_corrompu:
+        logging.error(fichier_corrompu)
+        envoi_mail(fichier_corrompu)
+        sys.exit(1)
+
+    except UnicodeEncodeError as erreur_analyse:
+        logging.error(erreur_analyse)
+        envoi_mail(erreur_analyse)
+        sys.exit(1)
+
+    except Exception as erreur_inconnue:
+        logging.error(erreur_inconnue)
+        envoi_mail(erreur_inconnue)
+        sys.exit(1)
 
 
 ########################
@@ -110,20 +154,37 @@ def sauvegarde_bdd(informations):
     a mysql et sauvegarde sur le dossier de sauvegarde.
     Retourne le dossier de sauvegarde de la bdd.
     """
-    if not os.path.exists(DOSSIER_SAUVEGARDE+'/bdd'):
-        os.makedirs(DOSSIER_SAUVEGARDE+'/bdd')
+    logging.info('Sauvegarde de la Base de donnee')
 
-    user = informations['user']
-    password = informations['password']
-    host = informations['host']
-    database = informations['database']
-    dumpname = os.path.normpath(os.path.join(
-        DOSSIER_SAUVEGARDE+'/bdd', informations['database'] + '.sql'))
-    cmd = "mysqldump  -u {} -p'{}' -h {} {}  > {}".format(
-        user, password, host, database, dumpname).encode(encoding="utf8")
-    subprocess.check_output(cmd, shell=True)
+    try:
+        if not os.path.exists(DOSSIER_SAUVEGARDE+'/bdd'):
+            os.makedirs(DOSSIER_SAUVEGARDE+'/bdd')
 
-    return dumpname
+        user = informations['user']
+        password = informations['password']
+        host = informations['host']
+        database = informations['database']
+        dumpname = os.path.normpath(os.path.join(
+            DOSSIER_SAUVEGARDE+'/bdd', informations['database'] + '.sql'))
+        cmd = "mysqldump  -u {} -p'{}' -h {} {}  > {}".format(
+            user, password, host, database, dumpname).encode(encoding="utf8")
+        subprocess.check_output(cmd, shell=True)
+        return dumpname
+
+    except subprocess.CalledProcessError as echec_mysqldump:
+        logging.error(echec_mysqldump)
+        envoi_mail(echec_mysqldump)
+        sys.exit(1)
+
+    except UnicodeEncodeError as info_nonascii:
+        logging.error(info_nonascii)
+        envoi_mail(info_nonascii)
+        sys.exit(1)
+
+    except Exception as erreur_inconnue:
+        logging.error(erreur_inconnue)
+        envoi_mail(erreur_inconnue)
+        sys.exit(1)
 
 
 #########################
@@ -136,21 +197,37 @@ def creation_archive(sauvegarde, dumpname):
     Supprime les dossiers de sauvegarde wordpress et bdd.
     Retourne le nom de l archive.
     """
-    time_tag = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    dir_name = os.path.basename(sauvegarde.rstrip('/'))
-    archive_name = os.path.normpath(DOSSIER_SAUVEGARDE+'/'+dir_name+'-'+time_tag+'.tar.gz')
+    logging.info('Archivage des sauvegardes wordpress et mysql')
 
-    with tarfile.open(archive_name, "w:gz") as tar:
-        tar.add(sauvegarde)
-        tar.add(dumpname, arcname="sql.dump")
+    try:
+        time_tag = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        dir_name = os.path.basename(sauvegarde.rstrip('/'))
+        archive_name = os.path.normpath(DOSSIER_SAUVEGARDE+'/'+dir_name+'-'+time_tag+'.tar.gz')
 
-    if os.path.exists(sauvegarde):
-        shutil.rmtree(sauvegarde)
+        with tarfile.open(archive_name, "w:gz") as tar:
+            tar.add(sauvegarde)
+            tar.add(dumpname, arcname="sql.dump")
 
-    if os.path.exists(dumpname):
-        shutil.rmtree(dumpname)
+        if os.path.exists(sauvegarde):
+            shutil.rmtree(sauvegarde)
+        if os.path.exists(dumpname):
+            shutil.rmtree(dumpname)
+        return archive_name
 
-    return archive_name
+    except FileNotFoundError as fichier_introuvable:
+        logging.error(fichier_introuvable)
+        envoi_mail(fichier_introuvable)
+        sys.exit(1)
+
+    except PermissionError as permission_refuse:
+        logging.error(permission_refuse)
+        envoi_mail(permission_refuse)
+        sys.exit(1)
+
+    except Exception as erreur_inconnue:
+        logging.error(erreur_inconnue)
+        envoi_mail(erreur_inconnue)
+        sys.exit(1)
 
 
 ####################################
@@ -162,12 +239,19 @@ def suppression_anciennes_archives(days=14):
     compare la date du jour et la date du fichier, si superieur au nombre de
     jour specifie, suprime le fichier.
     """
-    now = time.time()
-    for file in os.listdir(DOSSIER_SAUVEGARDE):
-        file_location = os.path.join(DOSSIER_SAUVEGARDE, file)
-        if os.stat(file_location).st_mtime < now - days * 86400 and os.path.isfile(file_location):
-            os.remove(file_location)
+    logging.info('Suppression des anciennes archives')
 
+    try:
+        now = time.time()
+        for file in os.listdir(DOSSIER_SAUVEGARDE):
+            file_save = os.path.join(DOSSIER_SAUVEGARDE, file)
+            if os.stat(file_save).st_mtime < now - days * 86400 and os.path.isfile(file_save):
+                os.remove(file_save)
+
+    except Exception as erreur_inconnue:
+        logging.error(erreur_inconnue)
+        envoi_mail(erreur_inconnue)
+        sys.exit(1)
 
 
 #########
@@ -178,20 +262,34 @@ def envoi_mail(erreur):
     """ Prend comme argument l erreur survenu lors du deroulement du script.
     Envoi un mail pour avertir l admin.
     """
-    serveur = smtplib.SMTP('smtp.gmail.com', 587)
-    serveur.starttls()
-    serveur.login(MAIL, MDP_MAIL)
-    message = erreur
-    serveur.sendmail(MAIL, MAIL, message)
-    serveur.quit()
+    logging.info('Envoi d un email')
+
+    try:
+        serveur = smtplib.SMTP('smtp.gmail.com', 587)
+        serveur.starttls()
+        serveur.login(MAIL, MDP_MAIL)
+        message = erreur
+        serveur.sendmail(MAIL, MAIL, message)
+        serveur.quit()
+
+    except Exception as erreur_inconnue:
+        logging.error(erreur_inconnue)
+        envoi_mail(erreur_inconnue)
+        sys.exit(1)
 
 
 #######################
 # Lancement du script #
 #######################
 
-SAUVEGARDE = sauvegarde_wordpress()
-INFORMATIONS = info_bdd(SAUVEGARDE)
-DUMPNAME = sauvegarde_bdd(INFORMATIONS)
-creation_archive(SAUVEGARDE, DUMPNAME)
-suppression_anciennes_archives(EXPIRATION)
+if os.path.exists(DOSSIER_SAUVEGARDE):
+    SAUVEGARDE = sauvegarde_wordpress()
+    INFORMATIONS = info_bdd(SAUVEGARDE)
+    DUMPNAME = sauvegarde_bdd(INFORMATIONS)
+    creation_archive(SAUVEGARDE, DUMPNAME)
+    suppression_anciennes_archives(EXPIRATION)
+
+else:
+    print('Le dossier de sauvegarde:', DOSSIER_SAUVEGARDE, 'est inexistant')
+    print('Vérifier la variable DOSSIER_SAUVEGARDE')
+    logging.error('DOSSIER_SAUVEGARDE inexistant')
