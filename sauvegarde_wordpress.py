@@ -3,9 +3,11 @@
 
 """ Script pour sauvegarder sur un serveur distant,
 un site Wordpress et une base de donnee Mysql via sftp.
+Les sauvegardes sont archivees dans un fichier .tar.gz avec
+la date du jour. Les archives perimees sont suprimees.
 
-OS testé : Ubuntu 19.10 Desktop / Server
-           Ubuntu 18.04 Desktop / Server
+Pour <import pysftp> il faut installer le module au prealable,
+pip3 install pysftp.
 """
 
 
@@ -23,6 +25,7 @@ import time
 import shutil
 import smtplib
 import logging
+import configparser
 import pysftp
 
 
@@ -30,17 +33,22 @@ import pysftp
 # Variables #
 #############
 
-MAIL = 'xxx@gmail.com'
-MDP_MAIL = 'xxx'
+if os.path.isfile('informations'):
+    config = configparser.RawConfigParser()
+    config.read('informations')
+    MAIL = config.get('MAIL', 'mail')
+    MDP_MAIL = config.get('MAIL', 'mdp')
 
-SFTP_HOST = '192.168.122.232'
-SFTP_USER = 'wismerill'
-SFTP_PASSWD = 'wismerill'
+    SFTP_HOST = config.get('SFTP', 'host')
+    SFTP_USER = config.get('SFTP', 'user')
+    SFTP_PASSWD = config.get('SFTP', 'mdp')
 
-DOSSIER_SAUVEGARDE = '/home/wismerill/sauvegarde' # Serveur hote.
-DOSSIER_TEMPORAIRE = '/home/wismerill/sauvegarde' # Serveur distant.
-DOSSIER_WORDPRESS = '/var/www/wordpress'
-EXPIRATION = 14 # Duree en jour d expiration des archives.
+    DOSSIER_SAUVEGARDE = config.get('VARIABLES', 'sauvegarde')
+    DOSSIER_TEMPORAIRE = config.get('VARIABLES', 'temporaire')
+    DOSSIER_WORDPRESS = config.get('VARIABLES', 'wordpress')
+    EXPIRATION = config.get('VARIABLES', 'expiration')
+else:
+    print('Vérifier la présence du fichier informations')
 
 
 #######
@@ -93,9 +101,9 @@ def sauvegarde_wordpress():
         sys.exit(1)
 
 
-###########################################################################
+#########################################################################
 # Recuperation des informations de connexion a la BDD via wp-config.php #
-###########################################################################
+#########################################################################
 
 def info_bdd(sauvegarde):
     """ Prend comme argument le dossier de sauvegarde wordpress,

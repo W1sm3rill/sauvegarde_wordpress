@@ -1,0 +1,14 @@
+[MAIL]
+mail: wismerillopenclassroom@gmail.com
+mdp: wismerillprojet6
+
+[SFTP]
+host: 192.168.122.232
+user: wismerill
+mdp: wismerill
+
+[VARIABLES]
+sauvegarde: /home/wismerill/sauvegarde
+temporaire: /home/wismerill/sauvegarde
+wordpress: /var/www/wordpress
+expiration = 14
