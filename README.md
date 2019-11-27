@@ -1,13 +1,13 @@
-* Script pour sauvegarder sur un serveur distant,
-un site Wordpress et une base de donnee Mysql via sftp.
-* Les sauvegardes sont archivées dans un fichier ".tar.gz" avec la date du jour. 
-* Les archives périmées sont suprimées.
+Script pour sauvegarder un serveur distant,  
+un site Wordpress et une base de donnee Mysql via sftp.  
+Les sauvegardes sont archivées dans un fichier ".tar.gz" avec la date du jour.  
+Les archives périmées sont suprimées.  
 
-* Pour "import pysftp" il faut installer le module au préalable via
-pip3 install pysftp
+Pour "import pysftp" il faut installer le module au préalable via  
+pip3 install pysftp  
 
-* Le script et le fichier "informations" doivent être dans le même dossier.
-* "informations" contient les variables nécessaire au script :
+Le script et le fichier "informations" doivent être dans le même dossier,  
+"informations" contient les variables nécessaire au script :  
 
 ```
 [MAIL]
