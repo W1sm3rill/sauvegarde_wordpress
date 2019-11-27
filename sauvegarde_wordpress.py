@@ -253,7 +253,7 @@ def suppression_anciennes_archives(days=14):
         now = time.time()
         for file in os.listdir(DOSSIER_SAUVEGARDE):
             file_save = os.path.join(DOSSIER_SAUVEGARDE, file)
-            if os.stat(file_save).st_mtime < now - days * 86400 and os.path.isfile(file_save):
+            if os.stat(file_save).st_mtime < now - float(days) * 86400 and os.path.isfile(file_save):
                 os.remove(file_save)
 
     except Exception as erreur_inconnue:
