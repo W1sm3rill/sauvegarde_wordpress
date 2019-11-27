@@ -1,5 +1,4 @@
-Script pour sauvegarder un serveur distant,  
-un site Wordpress et une base de donnee Mysql via sftp.  
+Script pour sauvegarder un site WordPress et sa Base De Donnée sur un site distant.  
 Les sauvegardes sont archivées dans un fichier ".tar.gz" avec la date du jour.  
 Les archives périmées sont suprimées.  
 
