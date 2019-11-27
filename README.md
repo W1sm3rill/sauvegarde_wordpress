@@ -24,3 +24,5 @@ temporaire: le chemin du dossier de sauvegarde temporaire de la machine distant
 wordpress: le chemin du dossier wordpress
 expiration: péremption des archives exprimés en jour
 ```
+
+Python version 3.x
