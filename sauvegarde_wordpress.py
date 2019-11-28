@@ -290,11 +290,13 @@ def envoi_mail(erreur):
 #######################
 
 if os.path.exists(DOSSIER_SAUVEGARDE):
+    print('==> Sauvergarde commencée <==')
     SAUVEGARDE = sauvegarde_wordpress()
     INFORMATIONS = info_bdd(SAUVEGARDE)
     DUMPNAME = sauvegarde_bdd(INFORMATIONS)
     creation_archive(SAUVEGARDE, DUMPNAME)
     suppression_anciennes_archives(EXPIRATION)
+    print('==> Sauvegarde terminée <==')
 
 else:
     print('Le dossier de sauvegarde:', DOSSIER_SAUVEGARDE, 'est inexistant')
