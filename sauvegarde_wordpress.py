@@ -9,8 +9,8 @@ la date du jour. Les archives perimees sont suprimees.
 Pour <import pysftp> il faut installer le module au prealable,
 pip3 install pysftp.
 
-Auteur : W1sm3rill
-Contact : wismerillopenclassroom@gmail.com
+Auteur: W1sm3rill
+Contact: wismerillopenclassroom@gmail.com
 """
 
 
