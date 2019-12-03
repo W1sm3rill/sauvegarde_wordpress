@@ -37,6 +37,7 @@ import pysftp
 #############
 
 if os.path.isfile('informations'):
+    # Lis le fichier et retourne la valeur.
     config = configparser.RawConfigParser()
     config.read('informations')
     MAIL = config.get('MAIL', 'mail')
@@ -67,10 +68,13 @@ logging.basicConfig(filename='sauvegarde_wordpress.log', level=logging.DEBUG,\
 ########################
 
 def sauvegarde_wordpress():
-    """ Creer un dossier de sauvegarde, creer un dossier temporaire,
-    copie le dossier wordpress dans le dossier temporaire,
+    """Sauvegarde le dossier wordpress sur le serveur hote.
+
+    Creer un dossier de sauvegarde sur le serveur hote, se connecte au serveur distant,
+    creer un dossier temporaire, copie le dossier wordpress dans le dossier temporaire,
     telecharge le dossier sur le serveur hote et supprime le dossier temporaire.
-    Retourne le dossier de sauvegarde wordpress.
+
+    Retourne un str de l emplacement du dossier de sauvergarde wordpress.
     """
     logging.info('Sauvegarde de Wordpress')
 
@@ -109,14 +113,17 @@ def sauvegarde_wordpress():
 #########################################################################
 
 def info_bdd(sauvegarde):
-    """ Prend comme argument le dossier de sauvegarde wordpress,
-    recupere les informations de connexion a Mysql dans le fichier wp-config.php
-    et le retourne dans un dictionnaire.
+    """Analyse et recupere des valeurs dans wp-config.php.
+
+    Prend comme argument le dossier de sauvegarde wordpress.
+    Lis le fichier wp-config.php et recupere les informations.
+
+    Retourne dans un dictionnaire les cles/valeurs.
     """
     logging.info('Analyse des informations de connexion dans wp-config.php')
 
     try:
-        fichier = os.path.normpath(sauvegarde+'/wp-config.php')
+        fichier = os.path.normpath(sauvegarde+'/wp-config.php') # Evite les séparateurs redondants.
         with open(fichier) as file:
             contenu = file.read()
             regex_db = r'define\(\s*?\'DB_NAME\'\s*?,\s*?\'(?P<DB>.*?)\'\s*?\);'
@@ -160,10 +167,14 @@ def info_bdd(sauvegarde):
 ########################
 
 def sauvegarde_bdd(informations):
-    """ Prend comme argument le dictionnaire de info_bdd.
-    Creer un dossier de sauvegarde, utilise le dictionnaire pour se connecter
-    a mysql et sauvegarde sur le dossier de sauvegarde.
-    Retourne le dossier de sauvegarde de la bdd.
+    """Sauvegarde la base de donnee mysql.
+
+    Prend comme argument le dictionnaire de info_bdd.
+    Creer un dossier de sauvegarde sur le serveur hote,
+    utilise le dictionnaire pour se connecter a mysql 
+    et sauvegarde sur le dossier de sauvegarde.
+
+    Retourne un str de l emplacement du dossier de sauvegarde de la bdd.
     """
     logging.info('Sauvegarde de la Base de donnee')
 
@@ -203,10 +214,13 @@ def sauvegarde_bdd(informations):
 #########################
 
 def creation_archive(sauvegarde, dumpname):
-    """ Prend comme argument le dossier de sauvegarde de wordpress et de la bdd.
+    """Creer une archive des dossiers de sauvegarde.
+
+    Prend comme argument le dossier de sauvegarde de wordpress et de la bdd.
     Compresse les dossiers dans un fichier .tar.gz a la date du jour.
     Supprime les dossiers de sauvegarde wordpress et bdd.
-    Retourne le nom de l archive.
+
+    Retourne un str de l emplacement de l archive.
     """
     logging.info('Archivage des sauvegardes wordpress et mysql')
 
@@ -246,9 +260,10 @@ def creation_archive(sauvegarde, dumpname):
 ####################################
 
 def suppression_anciennes_archives(days=14):
-    """ Prend comme argument le nombre de jour de peremption de l archive,
-    compare la date du jour et la date du fichier, si superieur au nombre de
-    jour specifie, suprime le fichier.
+    """Suprime les archives perimees.
+
+    Prend comme argument le nombre de jour de peremption de l archive, compare la date du jour 
+    et la date du fichier, si superieur au nombre de jour specifie, suprime le fichier.
     """
     logging.info('Suppression des anciennes archives')
 
@@ -270,7 +285,9 @@ def suppression_anciennes_archives(days=14):
 #########
 
 def envoi_mail(erreur):
-    """ Prend comme argument l erreur survenu lors du deroulement du script.
+    """Envoi un mail.
+
+    Prend comme argument l erreur survenu lors du deroulement du script.
     Envoi un mail pour avertir l admin.
     """
     logging.info('Envoi d un email')
@@ -294,10 +311,15 @@ def envoi_mail(erreur):
 
 if os.path.exists(DOSSIER_SAUVEGARDE):
     print('==> Sauvergarde commencée <==')
+    # Appel de la fonction sauvegarde_wordpress dans la variable SAUVEGARDE.
     SAUVEGARDE = sauvegarde_wordpress()
+    # Appel de la fonction info_bdd avec l argument SAUVEGARDE dans la variable INFORMATIONS.
     INFORMATIONS = info_bdd(SAUVEGARDE)
+    # Appel de la fonction sauvegarde_bdd avec l argument INFORMATIONS dans la variable DUMPNAME.
     DUMPNAME = sauvegarde_bdd(INFORMATIONS)
+    # Appel de la fonction creation_archive avec l argument SAUVEGARDE et DUMPNAME.
     creation_archive(SAUVEGARDE, DUMPNAME)
+    # Appel de la fonction suppression_anciennes_archives avec l argument EXPIRATION.
     suppression_anciennes_archives(EXPIRATION)
     print('==> Sauvegarde terminée <==')
 
