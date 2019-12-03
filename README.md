@@ -5,7 +5,9 @@ Les archives périmées sont suprimées.
 Pour "import pysftp" il faut installer le module au préalable via  
 pip3 install pysftp  
 
-Le script et le fichier "informations" doivent être dans le même dossier,  
+Le script et le fichier "informations" doivent être dans le même dossier.  
+Pour plus de sécurité sur ce fichier contenant des mots de passe, changez le propriétaire et les droits du fichier. (chown et chmod)   
+
 "informations" contient les variables nécessaire au script :  
 
 ```
