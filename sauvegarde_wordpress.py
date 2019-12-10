@@ -1,13 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: utf8 -*-
 
-""" Script pour sauvegarder sur un serveur distant,
-un site Wordpress et une base de donnee Mysql via sftp.
-Les sauvegardes sont archivees dans un fichier .tar.gz avec
-la date du jour. Les archives perimees sont suprimees.
+"""Script pour sauvegarder un site Wordpress et sa base de donnee Mysql via sftp.
+Les sauvegardes sont archivees dans un fichier .tar.gz avec la date du jour.
+Les archives perimees sont supprimees.
 
-Pour <import pysftp> il faut installer le module au prealable,
-pip3 install pysftp.
+Pour <import pysftp> il faut installer le module au prealable : pip3 install pysftp
 
 Auteur: W1sm3rill
 Contact: wismerillopenclassroom@gmail.com
@@ -36,8 +34,8 @@ import pysftp
 # Variables #
 #############
 
+# Lecture du fichier informations et extraction des variables.
 if os.path.isfile('informations'):
-    # Lis le fichier et retourne la valeur.
     config = configparser.RawConfigParser()
     config.read('informations')
     MAIL = config.get('MAIL', 'mail')
@@ -68,11 +66,14 @@ logging.basicConfig(filename='sauvegarde_wordpress.log', level=logging.DEBUG,\
 ########################
 
 def sauvegarde_wordpress():
-    """Sauvegarde le dossier wordpress sur le serveur hote.
+    """Sauvegarde le dossier wordpress sur le serveur hote via sftp.
 
-    Creer un dossier de sauvegarde sur le serveur hote, se connecte au serveur distant,
-    creer un dossier temporaire, copie le dossier wordpress dans le dossier temporaire,
-    telecharge le dossier sur le serveur hote et supprime le dossier temporaire.
+    Creer un dossier de sauvegarde wordpress sur le serveur hote,
+    Se connecte au serveur distant,
+    Creer un dossier temporaire,
+    Copie le dossier wordpress dans le dossier temporaire,
+    Telecharge le dossier temporaire dans le dossier de sauvegarde wordpress du serveur hote,
+    Supprime le dossier temporaire.
 
     Retourne un str de l emplacement du dossier de sauvergarde wordpress.
     """
@@ -87,7 +88,7 @@ def sauvegarde_wordpress():
             if not sftp.exists(DOSSIER_TEMPORAIRE):
                 sftp.makedirs(DOSSIER_TEMPORAIRE)
             sftp.execute('cp -r DOSSIER_WORDPRESS DOSSIER_TEMPORAIRE')
-            sftp.get_d(DOSSIER_TEMPORAIRE, DOSSIER_SAUVEGARDE+'/wordpress')
+            sftp.get_d(DOSSIER_TEMPORAIRE, sauvegarde)
             sftp.execute('rm -R DOSSIER_TEMPORAIRE')
             sftp.close()
         return sauvegarde
@@ -170,11 +171,11 @@ def sauvegarde_bdd(informations):
     """Sauvegarde la base de donnee mysql.
 
     Prend comme argument le dictionnaire de info_bdd.
-    Creer un dossier de sauvegarde sur le serveur hote,
-    utilise le dictionnaire pour se connecter a mysql 
-    et sauvegarde sur le dossier de sauvegarde.
+    Creer un dossier de sauvegarde bdd sur le serveur hote,
+    Utilise le dictionnaire pour se connecter a mysql,
+    Sauvegarde sur le dossier de sauvegarde bdd.
 
-    Retourne un str de l emplacement du dossier de sauvegarde de la bdd.
+    Retourne un str de l emplacement du dossier de sauvegarde bdd.
     """
     logging.info('Sauvegarde de la Base de donnee')
 
@@ -186,11 +187,11 @@ def sauvegarde_bdd(informations):
         password = informations['password']
         host = informations['host']
         database = informations['database']
-        dumpname = os.path.normpath(os.path.join(
+        dumpname = os.path.normpath(os.path.join( # Evite toute erreur de chemin.
             DOSSIER_SAUVEGARDE+'/bdd', informations['database'] + '.sql'))
         cmd = "mysqldump  -u {} -p'{}' -h {} {}  > {}".format(
             user, password, host, database, dumpname).encode(encoding="utf8")
-        subprocess.check_output(cmd, shell=True)
+        subprocess.check_output(cmd, shell=True) # Lance la commande et renvoie sa sortie.
         return dumpname
 
     except subprocess.CalledProcessError as echec_mysqldump:
@@ -226,12 +227,12 @@ def creation_archive(sauvegarde, dumpname):
 
     try:
         time_tag = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        dir_name = os.path.basename(sauvegarde.rstrip('/'))
+        dir_name = os.path.basename(sauvegarde.rstrip('/')) # Supprime les /.
         archive_name = os.path.normpath(DOSSIER_SAUVEGARDE+'/'+dir_name+'-'+time_tag+'.tar.gz')
 
         with tarfile.open(archive_name, "w:gz") as tar:
             tar.add(sauvegarde)
-            tar.add(dumpname, arcname="sql.dump")
+            tar.add(dumpname, arcname="sql.dump") # arcname : le nom de l archive.
 
         if os.path.exists(sauvegarde):
             shutil.rmtree(sauvegarde)
@@ -260,16 +261,17 @@ def creation_archive(sauvegarde, dumpname):
 ####################################
 
 def suppression_anciennes_archives(days=14):
-    """Suprime les archives perimees.
+    """Supprime les archives perimees.
 
-    Prend comme argument le nombre de jour de peremption de l archive, compare la date du jour 
-    et la date du fichier, si superieur au nombre de jour specifie, suprime le fichier.
+    Prend comme argument le nombre de jour de peremption de l archive,
+    Compare la date du jour et la date du fichier,
+    Si superieur au nombre de jour specifie, supprime le fichier.
     """
     logging.info('Suppression des anciennes archives')
 
     try:
         now = time.time()
-        for file in os.listdir(DOSSIER_SAUVEGARDE):
+        for file in os.listdir(DOSSIER_SAUVEGARDE): # Contenu du repertoire.
             file_save = os.path.join(DOSSIER_SAUVEGARDE, file)
             if os.stat(file_save).st_mtime < now - float(days) * 86400 and os.path.isfile(file_save):
                 os.remove(file_save)
@@ -311,16 +313,22 @@ def envoi_mail(erreur):
 
 if os.path.exists(DOSSIER_SAUVEGARDE):
     print('==> Sauvergarde commencée <==')
+
     # Appel de la fonction sauvegarde_wordpress dans la variable SAUVEGARDE.
     SAUVEGARDE = sauvegarde_wordpress()
+
     # Appel de la fonction info_bdd avec l argument SAUVEGARDE dans la variable INFORMATIONS.
     INFORMATIONS = info_bdd(SAUVEGARDE)
+
     # Appel de la fonction sauvegarde_bdd avec l argument INFORMATIONS dans la variable DUMPNAME.
     DUMPNAME = sauvegarde_bdd(INFORMATIONS)
+
     # Appel de la fonction creation_archive avec l argument SAUVEGARDE et DUMPNAME.
     creation_archive(SAUVEGARDE, DUMPNAME)
+
     # Appel de la fonction suppression_anciennes_archives avec l argument EXPIRATION.
     suppression_anciennes_archives(EXPIRATION)
+
     print('==> Sauvegarde terminée <==')
 
 else:
