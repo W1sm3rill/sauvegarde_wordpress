@@ -175,7 +175,7 @@ def sauvegarde_bdd(informations):
     Utilise le dictionnaire pour se connecter a mysql,
     Sauvegarde sur le dossier de sauvegarde bdd.
 
-    Retourne un str de l emplacement du dossier de sauvegarde bdd.
+    Retourne un str de l emplacement du fichier de sauvegarde bdd.
     """
     logging.info('Sauvegarde de la Base de donnee')
 
