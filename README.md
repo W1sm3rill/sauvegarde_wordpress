@@ -1,6 +1,6 @@
 Script pour sauvegarder un site WordPress et sa Base De Donnée sur un site distant.  
 Les sauvegardes sont archivées dans un fichier ".tar.gz" avec la date du jour.  
-Les archives périmées sont suprimées.  
+Les archives périmées sont supprimées.  
 
 Pour "import pysftp" il faut installer le module au préalable via : ```pip3 install pysftp```  
 
