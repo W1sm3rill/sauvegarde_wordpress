@@ -1,14 +1,14 @@
 [MAIL]
-mail: wismerillopenclassroom@gmail.com
-mdp: wismerillprojet6
+mail: vôtre adresse gmail
+mdp: le mot de passe de l'adresse gmail
 
 [SFTP]
-host: 192.168.122.232
-user: wismerill
-mdp: wismerill
+host: l'IP du serveur web
+user: l'utilisateur du serveur web
+mdp: le mot de passe de l'utilisateur
 
 [VARIABLES]
-sauvegarde: /home/wismerill/sauvegarde
-temporaire: /home/wismerill/sauvegarde
-wordpress: /var/www/wordpress
-expiration: 14
+sauvegarde: le chemin du dossier de sauvegarde de la machine hôte
+temporaire: le chemin du dossier de sauvegarde temporaire de la machine distant
+wordpress: le chemin du dossier wordpress
+expiration: péremption des archives exprimés en jour

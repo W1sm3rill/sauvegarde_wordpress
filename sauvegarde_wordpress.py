@@ -261,7 +261,7 @@ def creation_archive(sauvegarde, dumpname):
 ####################################
 
 def suppression_anciennes_archives(days=14):
-    """Supprime les archives perimees.
+    """Supprime les anciennes archives.
 
     Prend comme argument le nombre de jour de peremption de l archive,
     Compare la date du jour et la date du fichier,
@@ -289,18 +289,18 @@ def suppression_anciennes_archives(days=14):
 def envoi_mail(erreur):
     """Envoi un mail.
 
-    Prend comme argument l erreur survenu lors du deroulement du script.
+    Prend comme argument l erreur survenu lors du deroulement du script.    
     Envoi un mail pour avertir l admin.
     """
     logging.info('Envoi d un email')
 
     try:
-        serveur = smtplib.SMTP('smtp.gmail.com', 587)
-        serveur.starttls()
-        serveur.login(MAIL, MDP_MAIL)
-        message = erreur
-        serveur.sendmail(MAIL, MAIL, message)
-        serveur.quit()
+        serveur = smtplib.SMTP('smtp.gmail.com', 587) # Connexion au serveur.
+        serveur.starttls() # Specification de la securisation.
+        serveur.login(MAIL, MDP_MAIL) # Authentification.
+        message = erreur # Message a envoyer.
+        serveur.sendmail(MAIL, MAIL, message) # Envoie du message.
+        serveur.quit() # Deconnexion du serveur.
 
     except Exception as erreur_inconnue:
         logging.error(erreur_inconnue)

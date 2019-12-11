@@ -1,4 +1,4 @@
-Script pour sauvegarder un site WordPress et sa Base De Donnée sur un site distant.  
+Script pour sauvegarder un site WordPress et sa Base De Données sur un site distant.  
 Les sauvegardes sont archivées dans un fichier ".tar.gz" avec la date du jour.  
 Les archives périmées sont supprimées.  
 
