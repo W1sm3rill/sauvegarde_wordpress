@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf8 -*-
 
-"""Script pour sauvegarder un site Wordpress et sa base de donnee Mysql via sftp.
+"""Script pour sauvegarder un site Wordpress et sa base de donnees Mysql via sftp.
 Les sauvegardes sont archivees dans un fichier .tar.gz avec la date du jour.
 Les archives perimees sont supprimees.
 
@@ -94,16 +94,19 @@ def sauvegarde_wordpress():
         return sauvegarde
 
     except AuthenticationException as echec_authentication:
+        # Probleme d authentification au serveur.
         logging.error(echec_authentication)
         envoi_mail('Erreur Sauvegarde de Wordpress')
         sys.exit(1)
 
     except PermissionError as permission_refuse:
+        # Permission refuse.
         logging.error(permission_refuse)
         envoi_mail('Erreur Sauvegarde de Wordpress')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
+        # Tout autre erreur.
         logging.error(erreur_inconnue)
         envoi_mail('Erreur Sauvegarde de Wordpress')
         sys.exit(1)
@@ -138,26 +141,31 @@ def info_bdd(sauvegarde):
         return {'database':database, 'user':user, 'password':password, 'host':host}
 
     except FileNotFoundError as fichier_introuvable:
+        # Le fichier est introuvable.
         logging.error(fichier_introuvable)
         envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except PermissionError as permission_refuse:
+        # Permisson refuse.
         logging.error(permission_refuse)
         envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except AttributeError as fichier_corrompu:
+        # Le fichier est corrompu.
         logging.error(fichier_corrompu)
         envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except UnicodeEncodeError as erreur_analyse:
+        # Erreur dans l analyse du fichier.
         logging.error(erreur_analyse)
         envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
+        # Tout autre erreur.
         logging.error(erreur_inconnue)
         envoi_mail('Erreur Analyse wp-config')
         sys.exit(1)
@@ -168,7 +176,7 @@ def info_bdd(sauvegarde):
 ########################
 
 def sauvegarde_bdd(informations):
-    """Sauvegarde la base de donnee mysql.
+    """Sauvegarde la base de donnees mysql.
 
     Prend comme argument le dictionnaire de info_bdd.
     Creer un dossier de sauvegarde bdd sur le serveur hote,
@@ -195,16 +203,19 @@ def sauvegarde_bdd(informations):
         return dumpname
 
     except subprocess.CalledProcessError as echec_mysqldump:
+        # Probleme de connexion a msql.
         logging.error(echec_mysqldump)
         envoi_mail('Erreur Sauvegarde BDD')
         sys.exit(1)
 
     except UnicodeEncodeError as info_nonascii:
+        # Probleme dans l encodage, un caractere unicode non ascii.
         logging.error(info_nonascii)
         envoi_mail('Erreur Sauvegarde BDD')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
+        # Tout autre erreur.
         logging.error(erreur_inconnue)
         envoi_mail('Erreur Sauvegarde BDD')
         sys.exit(1)
@@ -241,16 +252,19 @@ def creation_archive(sauvegarde, dumpname):
         return archive_name
 
     except FileNotFoundError as fichier_introuvable:
+        # Le fichier est introuvable.
         logging.error(fichier_introuvable)
         envoi_mail('Erreur Archivage')
         sys.exit(1)
 
     except PermissionError as permission_refuse:
+        # Permission refuse.
         logging.error(permission_refuse)
         envoi_mail('Erreur Archivage')
         sys.exit(1)
 
     except Exception as erreur_inconnue:
+        # Tout autre erreur.
         logging.error(erreur_inconnue)
         envoi_mail('Erreur Archivage')
         sys.exit(1)
@@ -277,6 +291,7 @@ def suppression_anciennes_archives(days=14):
                 os.remove(file_save)
 
     except Exception as erreur_inconnue:
+        # Tout autre erreur.
         logging.error(erreur_inconnue)
         envoi_mail('Erreur Suppression ancienne archive')
         sys.exit(1)
@@ -303,6 +318,7 @@ def envoi_mail(erreur):
         serveur.quit() # Deconnexion du serveur.
 
     except Exception as erreur_inconnue:
+        # Tout autre erreur.
         logging.error(erreur_inconnue)
         sys.exit(1)
 
