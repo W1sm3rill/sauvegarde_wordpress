@@ -46,7 +46,6 @@ if os.path.isfile('informations'):
     SFTP_PASSWD = config.get('SFTP', 'mdp')
 
     DOSSIER_SAUVEGARDE = config.get('VARIABLES', 'sauvegarde')
-    DOSSIER_TEMPORAIRE = config.get('VARIABLES', 'temporaire')
     DOSSIER_WORDPRESS = config.get('VARIABLES', 'wordpress')
     EXPIRATION = config.get('VARIABLES', 'expiration')
 else:
@@ -70,10 +69,7 @@ def sauvegarde_wordpress():
 
     Creer un dossier de sauvegarde wordpress sur le serveur hote,
     Se connecte au serveur distant,
-    Creer un dossier temporaire,
-    Copie le dossier wordpress dans le dossier temporaire,
-    Telecharge le dossier temporaire dans le dossier de sauvegarde wordpress du serveur hote,
-    Supprime le dossier temporaire.
+    Telecharge le dossier wordpress dans le dossier de sauvegarde wordpress du serveur hote.
 
     Retourne un str de l emplacement du dossier de sauvergarde wordpress.
     """
@@ -85,11 +81,7 @@ def sauvegarde_wordpress():
         sauvegarde = DOSSIER_SAUVEGARDE+'/wordpress'
 
         with pysftp.Connection(SFTP_HOST, username=SFTP_USER, password=SFTP_PASSWD) as sftp:
-            if not sftp.exists(DOSSIER_TEMPORAIRE):
-                sftp.makedirs(DOSSIER_TEMPORAIRE)
-            sftp.execute('cp -r DOSSIER_WORDPRESS DOSSIER_TEMPORAIRE')
-            sftp.get_d(DOSSIER_TEMPORAIRE, sauvegarde)
-            sftp.execute('rm -R DOSSIER_TEMPORAIRE')
+            sftp.get_d(DOSSIER_WORDPRESS, sauvegarde)
             sftp.close()
         return sauvegarde
 
@@ -127,7 +119,7 @@ def info_bdd(sauvegarde):
     logging.info('Analyse des informations de connexion dans wp-config.php')
 
     try:
-        fichier = os.path.normpath(sauvegarde+'/wp-config.php') # Evite les séparateurs redondants.
+        fichier = os.path.normpath(sauvegarde+'/var/www/wordpress/wp-config.php') # Evite les séparateurs redondants.
         with open(fichier) as file:
             contenu = file.read()
             regex_db = r'define\(\s*?\'DB_NAME\'\s*?,\s*?\'(?P<DB>.*?)\'\s*?\);'

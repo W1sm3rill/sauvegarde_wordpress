@@ -9,6 +9,5 @@ mdp: le mot de passe de l'utilisateur
 
 [VARIABLES]
 sauvegarde: le chemin du dossier de sauvegarde de la machine hôte
-temporaire: le chemin du dossier de sauvegarde temporaire de la machine distant
 wordpress: le chemin du dossier wordpress
 expiration: péremption des archives exprimés en jour
