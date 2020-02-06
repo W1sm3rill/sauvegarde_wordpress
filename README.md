@@ -13,11 +13,7 @@ Les variables sont récupérées dans le fichier "informations".
 Un logging basic est lancé.   
 
 Le script va créer un dosssier de sauvegarde wordpress sur le serveur hote,   
-Se connecter au serveur web,   
-Créer un dossier temporaire,   
-Copier le dossier Wordpress dans le dossier temporaire,   
-Télécharger le dossier temporaire dans le dossier de sauvegarde wordpress   
-Et supprimer le dossier temporaire.   
+Télécharger le dossier wordpress dans le dossier de sauvegarde wordpress.      
 
 Il va analyser et récuperer les informations de connexion à la base de données contenu dans le fichier wp-config.php,   
 Créer un dossier de sauvegarde BDD,   
@@ -57,7 +53,6 @@ mdp: le mot de passe de l'utilisateur
 
 [VARIABLES]
 sauvegarde: le chemin du dossier de sauvegarde de la machine hôte
-temporaire: le chemin du dossier de sauvegarde temporaire de la machine distant
 wordpress: le chemin du dossier wordpress
 expiration: péremption des archives exprimés en jour
 ```

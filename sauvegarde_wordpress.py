@@ -185,7 +185,7 @@ def sauvegarde_bdd(informations):
 
         user = informations['user']
         password = informations['password']
-        host = informations['host']
+        host = SFTP_HOST
         database = informations['database']
         dumpname = os.path.normpath(os.path.join( # Evite toute erreur de chemin.
             DOSSIER_SAUVEGARDE+'/bdd', informations['database'] + '.sql'))
